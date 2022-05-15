@@ -66,6 +66,12 @@ void Error_Handler(void);
 #define SpeedUP_GPIO_Port GPIOA
 #define InitPWM_Pin GPIO_PIN_2
 #define InitPWM_GPIO_Port GPIOA
+#define SimPh1_out_Pin GPIO_PIN_4
+#define SimPh1_out_GPIO_Port GPIOA
+#define SimPh2_out_Pin GPIO_PIN_5
+#define SimPh2_out_GPIO_Port GPIOA
+#define SimPh3_out_Pin GPIO_PIN_6
+#define SimPh3_out_GPIO_Port GPIOA
 #define Phase_C_Pin GPIO_PIN_7
 #define Phase_C_GPIO_Port GPIOA
 #define Phase_A_Pin GPIO_PIN_0
@@ -85,7 +91,7 @@ void Error_Handler(void);
 #define TIM2_CH1_phA_Pin GPIO_PIN_15
 #define TIM2_CH1_phA_GPIO_Port GPIOA
 /* USER CODE BEGIN Private defines */
-
+#define simulation 1
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

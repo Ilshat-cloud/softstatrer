@@ -51,9 +51,11 @@ extern DMA_HandleTypeDef hdma_adc1;
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-uint8_t phase_a_work=0,phase_b_work=0,phase_c_work=0,DC_stop_en=0, Start_time, Stop_time, init_pwm, start=0;
-uint16_t PWM=0, time_from_interrupt=0;
+uint8_t phase_a_work=0,phase_b_work=0,phase_c_work=0,DC_stop_en=0,  start=0, SimIter=0;;
+uint16_t Start_time, Stop_time, init_pwm, time_from_interrupt=0;
+int PWM=1000;
 uint8_t Time_b, Time_c, Time_a=0;
+float temp;
 
 /* USER CODE END Variables */
 /* Definitions for main_task */
@@ -99,7 +101,7 @@ void MX_FREERTOS_Init(void) {
 
   /* Create the timer(s) */
   /* creation of StopTimer */
-  StopTimerHandle = osTimerNew(StopTimer01, osTimerOnce, NULL, &StopTimer_attributes);
+  StopTimerHandle = osTimerNew(StopTimer01, osTimerPeriodic, NULL, &StopTimer_attributes);
 
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
@@ -139,6 +141,9 @@ void main_func(void *argument)
       DC_stop_en=1;
   }
   HAL_TIM_Base_Start(&htim3);  //this one for phase control
+  __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1000);
+  __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 1000);
+  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, 1000);
   NVIC_EnableIRQ(EXTI0_IRQn);
   NVIC_EnableIRQ(EXTI1_IRQn);
   NVIC_EnableIRQ(EXTI9_5_IRQn);
@@ -147,14 +152,18 @@ void main_func(void *argument)
   osDelay(2);
   HAL_ADC_Stop(&hadc1);
   HAL_ADC_Stop_DMA(&hadc1);
-  Start_time=dma[1]/4;  //10 ms per quant of time (100Hz interrupt)  1024 equal to 10 s
-  Stop_time=dma[0]/8;  //10 ms per quant of time (100Hz interrupt)  512 equal to 5 s
-  init_pwm=300+dma[2]/8;  //  from 30% to 70%  1000==100%
+  Start_time=1+dma[1]/4;  //10 ms per quant of time (100Hz interrupt)  1024 equal to 10 s
+  Stop_time=1+dma[0]/8;  //10 ms per quant of time (100Hz interrupt)  512 equal to 5 s
+  init_pwm=1000-300-dma[2]/8;  //  from 30% to 70%  1000==100%
   
   osDelay(10);
-
+  if (simulation==1){
+   osTimerStart(StopTimerHandle,3);
+  }
   
-  /* Infinite loop */
+  
+  
+/* Infinite loop */
   for(;;)
   {
 
@@ -164,11 +173,12 @@ void main_func(void *argument)
         {
           start=2; //start ==2 ON command second cicle
           time_from_interrupt=0;
-        }else{
+        }
+        if (start==0){
           start=1;
         }          
       }else{
-        if ((start!=3)&(start==2)|(start==4))//start ==3 OFF command 
+        if ((start!=3)&&((start==2)||(start==4)))//start ==3 OFF command 
           {
             start=3;
             time_from_interrupt=0;
@@ -176,7 +186,7 @@ void main_func(void *argument)
         
       } 
 
-    if (phase_a_work&(phase_c_work|phase_b_work)) //if phases more than one
+    if (phase_a_work&&(phase_c_work||phase_b_work)) //if phases more than one
     {
         if (Time_b<Time_c) //error phases
         {
@@ -191,12 +201,13 @@ void main_func(void *argument)
     if (start==2)
     {
       //wait for a start time over
-      if ((time_from_interrupt<Start_time)&(Start_time>0)) // speed up
+      if (time_from_interrupt<Start_time) // speed up
         {
-          PWM=(1000-init_pwm)*(time_from_interrupt/Start_time)+init_pwm;
-          PWM=(PWM>1000)?1000:PWM;
+          temp=(float)time_from_interrupt*init_pwm/Start_time;
+          PWM=init_pwm-(int)temp;
+          PWM=(PWM<0)?0:PWM;
         }else{
-          PWM=1000;
+          PWM=0; //0
           start=4;     
         }
 
@@ -212,49 +223,54 @@ void main_func(void *argument)
     }
     //========================================================================//
      
-    //-------------------reverse !enable --------------------------------//
-    if (start==0)
-    {
-      PWM=0;
-      HAL_GPIO_WritePin(Reverse_enable_DO_relay_GPIO_Port,Reverse_enable_DO_relay_Pin, GPIO_PIN_RESET);
-    }else{
-      HAL_GPIO_WritePin(Reverse_enable_DO_relay_GPIO_Port,Reverse_enable_DO_relay_Pin, GPIO_PIN_SET);
-    }
-    //========================================================================//
+
     
     //-------------------stop command --------------------------------//
     if (start==3)  // start ==3 means stop command 
     {
       if (DC_stop_en)
       {
-        PWM=0;
+        PWM=1000;
+        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, PWM);
+        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, PWM);
+        __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, PWM);
         osDelay(5);
         HAL_GPIO_WritePin(DC_on_DO_relay_GPIO_Port,DC_on_DO_relay_Pin, GPIO_PIN_SET);
         if (time_from_interrupt>Stop_time)//wait for a stop time over
         {
-          start=0;        
+          start=0;
+          HAL_GPIO_WritePin(DC_on_DO_relay_GPIO_Port,DC_on_DO_relay_Pin, GPIO_PIN_RESET);
         }
       }else{
-        if ((time_from_interrupt<Stop_time)&(Stop_time>0)) // speed down
+        if (time_from_interrupt<Stop_time) // speed down
           {
-            PWM=1000-init_pwm*(time_from_interrupt/Stop_time);
-            PWM=(PWM<init_pwm)?init_pwm:PWM;
+            temp=(float)time_from_interrupt*init_pwm/Stop_time;
+            PWM=(int)temp;
           }else{
-            PWM=0;
+            PWM=1000;
             start=0;
           }
         
       }
-    }else{
-      HAL_GPIO_WritePin(Start_enable_relay_GPIO_Port,Start_enable_relay_Pin, GPIO_PIN_RESET);
     }
     //========================================================================//
-
-    TIM2->CCR1=PWM;
-    TIM3->CCR1=PWM;
-    TIM4->CCR1=PWM;
+    
+    //-------------------reverse !enable --------------------------------//
+    if (start==0)
+    {
+      PWM=1000;
+      HAL_GPIO_WritePin(Reverse_enable_DO_relay_GPIO_Port,Reverse_enable_DO_relay_Pin, GPIO_PIN_RESET);
+      HAL_GPIO_WritePin(DC_on_DO_relay_GPIO_Port,DC_on_DO_relay_Pin, GPIO_PIN_RESET);
+      HAL_GPIO_WritePin(Start_enable_relay_GPIO_Port,Start_enable_relay_Pin, GPIO_PIN_RESET);
+    }else{
+      HAL_GPIO_WritePin(Reverse_enable_DO_relay_GPIO_Port,Reverse_enable_DO_relay_Pin, GPIO_PIN_SET);
+    }
+    //========================================================================//
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, PWM);
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, PWM);
+    __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, PWM);
     HAL_IWDG_Refresh(&hiwdg);
-    osDelay(2);
+    osDelay(5);
   }
   /* USER CODE END main_func */
 }
@@ -263,7 +279,30 @@ void main_func(void *argument)
 void StopTimer01(void *argument)
 {
   /* USER CODE BEGIN StopTimer01 */
-
+  switch(SimIter)
+  {
+  case 0:
+    HAL_GPIO_WritePin(SimPh1_out_GPIO_Port,SimPh1_out_Pin, GPIO_PIN_SET);
+    break;
+  case 1:
+    HAL_GPIO_WritePin(SimPh3_out_GPIO_Port,SimPh3_out_Pin, GPIO_PIN_RESET);
+    break;  
+  case 2:
+    HAL_GPIO_WritePin(SimPh2_out_GPIO_Port,SimPh2_out_Pin, GPIO_PIN_SET);
+    break;
+  case 3:
+    HAL_GPIO_WritePin(SimPh1_out_GPIO_Port,SimPh1_out_Pin, GPIO_PIN_RESET);
+    break;
+  case 4:
+    HAL_GPIO_WritePin(SimPh3_out_GPIO_Port,SimPh3_out_Pin, GPIO_PIN_SET);
+    break;
+  case 5:
+    HAL_GPIO_WritePin(SimPh2_out_GPIO_Port,SimPh2_out_Pin, GPIO_PIN_RESET);
+    break;    
+  }
+  SimIter++;
+  SimIter=(SimIter>5)?0:SimIter;
+ // osTimerStart(StopTimerHandle,3);
   /* USER CODE END StopTimer01 */
 }
 
@@ -282,23 +321,33 @@ void EXTI0_IRQHandler(void)
     phase_a_work=1;
     time_from_interrupt++;
     Time_a=0;
-    if (start>0){HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);}
+   // HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_1);
+    TIM_CHANNEL_STATE_SET(&htim2, TIM_CHANNEL_1, HAL_TIM_CHANNEL_STATE_READY);
+    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+    
+    
 }
 void EXTI1_IRQHandler(void)
 {
     HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1);
     phase_b_work=1;
-    if (start>0){HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);}
     Time_a++;
     Time_b=Time_a;
+  //  HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1);
+    TIM_CHANNEL_STATE_SET(&htim3, TIM_CHANNEL_1, HAL_TIM_CHANNEL_STATE_READY);
+    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+    
 }
 void EXTI9_5_IRQHandler(void)
 {
     HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_7);
     phase_c_work=1;
-    if (start>0){HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);}
     Time_a++;
     Time_c=Time_a;
+    TIM_CHANNEL_STATE_SET(&htim4, TIM_CHANNEL_1, HAL_TIM_CHANNEL_STATE_READY);
+    //HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
+    
 }
 
 

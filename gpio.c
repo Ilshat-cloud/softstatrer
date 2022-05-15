@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
+  * <h2><center>&copy; Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
   * This software component is licensed by ST under Ultimate Liberty license
@@ -52,10 +52,10 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(alarm_GPIO_Port, alarm_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, Start_enable_relay_Pin|DC_on_DO_relay_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, SimPh1_out_Pin|SimPh2_out_Pin|SimPh3_out_Pin|Reverse_enable_DO_relay_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(Reverse_enable_DO_relay_GPIO_Port, Reverse_enable_DO_relay_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, Start_enable_relay_Pin|DC_on_DO_relay_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : PtPin */
   GPIO_InitStruct.Pin = alarm_Pin;
@@ -63,6 +63,13 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(alarm_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PAPin PAPin PAPin */
+  GPIO_InitStruct.Pin = SimPh1_out_Pin|SimPh2_out_Pin|SimPh3_out_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PtPin */
   GPIO_InitStruct.Pin = Phase_C_Pin;
