@@ -3,6 +3,12 @@
     <Tool>
         <Name>linker</Name>
         <Parent>
+            <Path>C:\Users\user\Documents\softstatrer\EWARM\softstatrer\Exe\softstatrer.out</Path>
+            <Output>
+                <Path>C:\Users\user\Documents\softstatrer\EWARM\softstatrer\List\softstatrer.map</Path>
+            </Output>
+        </Parent>
+        <Parent>
             <Path>C:\firmware\softstatrer\EWARM\softstatrer\Exe\softstatrer.out</Path>
             <Output>
                 <Path>C:\firmware\softstatrer\EWARM\softstatrer\List\softstatrer.map</Path>

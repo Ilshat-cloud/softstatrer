@@ -25,7 +25,7 @@ if not "%~1" == "" goto debugFile
 
 @echo on 
 
-"C:\Program Files\IAR Systems\Embedded Workbench 9.2\common\bin\cspybat" -f "C:\firmware\softstatrer\EWARM\settings\softstatrer.softstatrer.general.xcl" --backend -f "C:\firmware\softstatrer\EWARM\settings\softstatrer.softstatrer.driver.xcl" 
+"C:\Program Files\IAR Systems\Embedded Workbench 9.2\common\bin\cspybat" -f "C:\Users\user\Documents\softstatrer\EWARM\settings\softstatrer.softstatrer.general.xcl" --backend -f "C:\Users\user\Documents\softstatrer\EWARM\settings\softstatrer.softstatrer.driver.xcl" 
 
 @echo off 
 goto end 
@@ -34,7 +34,7 @@ goto end
 
 @echo on 
 
-"C:\Program Files\IAR Systems\Embedded Workbench 9.2\common\bin\cspybat" -f "C:\firmware\softstatrer\EWARM\settings\softstatrer.softstatrer.general.xcl" "--debug_file=%~1" --backend -f "C:\firmware\softstatrer\EWARM\settings\softstatrer.softstatrer.driver.xcl" 
+"C:\Program Files\IAR Systems\Embedded Workbench 9.2\common\bin\cspybat" -f "C:\Users\user\Documents\softstatrer\EWARM\settings\softstatrer.softstatrer.general.xcl" "--debug_file=%~1" --backend -f "C:\Users\user\Documents\softstatrer\EWARM\settings\softstatrer.softstatrer.driver.xcl" 
 
 @echo off 
 :end

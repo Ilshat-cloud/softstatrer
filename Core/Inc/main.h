@@ -94,6 +94,11 @@ typedef enum {
   Device_Shunt_on                   = 2,
   Device_Stop                       = 3,
 } DeviceStatus_t;
+#define DEBUG_SET
+
+#ifdef DEBUG_SET
+#define  _printf(format, ...)     printf(format, ##__VA_ARGS__)
+#endif
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

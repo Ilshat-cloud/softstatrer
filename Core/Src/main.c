@@ -59,7 +59,12 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+  int __io_putchar(int ch)
+  {
+    // Write character to ITM ch.0
+    ITM_SendChar(ch);
+    return(ch);
+  }
 /* USER CODE END 0 */
 
 /**
@@ -72,7 +77,7 @@ int main(void)
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
-
+  
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */

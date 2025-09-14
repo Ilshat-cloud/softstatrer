@@ -118,7 +118,7 @@ void MX_FREERTOS_Init(void) {
 void StartmainTask(void *argument)
 {
   /* USER CODE BEGIN StartmainTask */
-  //шим где 0 это 100% а >9000 это ноль
+  //С€РёРј РіРґРµ 0 СЌС‚Рѕ 100% Р° >9000 СЌС‚Рѕ РЅРѕР»СЊ
   osDelay(2);
   uint16_t dma[3];
   HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&dma,3);
@@ -126,8 +126,8 @@ void StartmainTask(void *argument)
   HAL_ADC_Stop(&hadc1);
   HAL_ADC_Stop_DMA(&hadc1);
   uint16_t init_pwm =9000-dma[0]*2;
-  uint32_t dc_stop_time=(uint32_t)dma[1];         //0-4 секунды
-  uint16_t speed_up_time=dma[2];        //0-4 секунды
+  uint32_t dc_stop_time=(uint32_t)dma[1];         //0-4 СЃРµРєСѓРЅРґС‹
+  uint16_t speed_up_time=dma[2];        //0-4 СЃРµРєСѓРЅРґС‹
   uint32_t timer;
   uint32_t diff;
   /* Infinite loop */
@@ -136,10 +136,10 @@ void StartmainTask(void *argument)
     switch (status){
     case Device_Idle:
       SetPWMAll(9001);
-      if(HAL_GPIO_ReadPin(start_DI_GPIO_Port,start_DI_Pin)==GPIO_PIN_SET)
+      if(HAL_GPIO_ReadPin(start_DI_GPIO_Port,start_DI_Pin)==GPIO_PIN_RESET)
       {
         osDelay(2);
-        if(HAL_GPIO_ReadPin(start_DI_GPIO_Port,start_DI_Pin)==GPIO_PIN_SET)
+        if(HAL_GPIO_ReadPin(start_DI_GPIO_Port,start_DI_Pin)==GPIO_PIN_RESET)
         {
           status=Device_Speed_up;
           SetPWMAll(init_pwm);
@@ -148,10 +148,10 @@ void StartmainTask(void *argument)
       }
       break;
     case Device_Speed_up:
-      if(HAL_GPIO_ReadPin(start_DI_GPIO_Port,start_DI_Pin)==GPIO_PIN_RESET)
+      if(HAL_GPIO_ReadPin(start_DI_GPIO_Port,start_DI_Pin)==GPIO_PIN_SET)
       {
         osDelay(2);
-        if(HAL_GPIO_ReadPin(start_DI_GPIO_Port,start_DI_Pin)==GPIO_PIN_RESET)
+        if(HAL_GPIO_ReadPin(start_DI_GPIO_Port,start_DI_Pin)==GPIO_PIN_SET)
         {
           status=Device_Stop;
           break;
@@ -159,21 +159,25 @@ void StartmainTask(void *argument)
       }
       diff=osKernelGetTickCount()-timer;
       if (diff<speed_up_time){
-        float pwm=(float)init_pwm-(float)init_pwm*((float)diff/(float)speed_up_time);
-        if (pwm < 0) pwm = 0;
+        float pwm = (float)init_pwm * (1.0f - (float)diff / (float)speed_up_time);
+        if (pwm < 0.0f) pwm = 0.0f;
         SetPWMAll((uint16_t)pwm);
+        //_printf("PWM %d",(uint16_t)pwm);
       }else{
         status=Device_Shunt_on;
+        HAL_GPIO_WritePin(Shunt_DO_GPIO_Port,Shunt_DO_Pin,GPIO_PIN_SET);
       }
       
       break;
     case Device_Shunt_on:
       SetPWMAll(0);
-      if(HAL_GPIO_ReadPin(start_DI_GPIO_Port,start_DI_Pin)==GPIO_PIN_RESET)
+      if(HAL_GPIO_ReadPin(start_DI_GPIO_Port,start_DI_Pin)==GPIO_PIN_SET)
       {
         osDelay(2);
-        if(HAL_GPIO_ReadPin(start_DI_GPIO_Port,start_DI_Pin)==GPIO_PIN_RESET)
+        if(HAL_GPIO_ReadPin(start_DI_GPIO_Port,start_DI_Pin)==GPIO_PIN_SET)
         {
+          HAL_GPIO_WritePin(Shunt_DO_GPIO_Port,Shunt_DO_Pin,GPIO_PIN_RESET);
+          osDelay(50);         //Р±РµР·РёСЃРєСЂРѕРІРѕР№ РїРµСЂРµС…РѕРґ
           status=Device_Stop;
         }
       }
