@@ -28,8 +28,9 @@
 extern ADC_HandleTypeDef hadc1;
 DeviceStatus_t status=Device_Idle;
 extern TIM_HandleTypeDef htim4;
-extern TIM_HandleTypeDef htim5;
-extern TIM_HandleTypeDef htim15;
+extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim8;
+uint16_t ARR_TIM=9000;
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -135,14 +136,14 @@ void StartmainTask(void *argument)
   {
     switch (status){
     case Device_Idle:
-      SetPWMAll(9001);
+      ARR_TIM=9000;
       if(HAL_GPIO_ReadPin(start_DI_GPIO_Port,start_DI_Pin)==GPIO_PIN_RESET)
       {
         osDelay(2);
         if(HAL_GPIO_ReadPin(start_DI_GPIO_Port,start_DI_Pin)==GPIO_PIN_RESET)
         {
           status=Device_Speed_up;
-          SetPWMAll(init_pwm);
+          ARR_TIM=init_pwm;
           timer=osKernelGetTickCount();
         }
       }
@@ -161,7 +162,7 @@ void StartmainTask(void *argument)
       if (diff<speed_up_time){
         float pwm = (float)init_pwm * (1.0f - (float)diff / (float)speed_up_time);
         if (pwm < 0.0f) pwm = 0.0f;
-        SetPWMAll((uint16_t)pwm);
+        ARR_TIM=((uint16_t)pwm);
         //_printf("PWM %d",(uint16_t)pwm);
       }else{
         status=Device_Shunt_on;
@@ -170,7 +171,7 @@ void StartmainTask(void *argument)
       
       break;
     case Device_Shunt_on:
-      SetPWMAll(0);
+      ARR_TIM=0;
       if(HAL_GPIO_ReadPin(start_DI_GPIO_Port,start_DI_Pin)==GPIO_PIN_SET)
       {
         osDelay(2);
@@ -183,7 +184,7 @@ void StartmainTask(void *argument)
       }
       break;
     case Device_Stop:
-      SetPWMAll(9001);;
+      ARR_TIM=9000;
       osDelay(4);
       HAL_GPIO_WritePin(Stop_DO_GPIO_Port,Stop_DO_Pin,GPIO_PIN_SET);
       osDelay(dc_stop_time);
@@ -191,7 +192,6 @@ void StartmainTask(void *argument)
       status=Device_Idle;
       break;      
     }
-    
     osDelay(1);
     HAL_GPIO_TogglePin(Led_GPIO_Port,Led_Pin);
   }
@@ -202,9 +202,9 @@ void StartmainTask(void *argument)
 /* USER CODE BEGIN Application */
 void SetPWMAll(uint16_t pwm)
 {
-  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, pwm);
-  __HAL_TIM_SET_COMPARE(&htim15, TIM_CHANNEL_1, pwm);
-  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, pwm);
+//  __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_1, pwm);
+//  __HAL_TIM_SET_COMPARE(&htim15, TIM_CHANNEL_1, pwm);
+//  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, pwm);
 }
 /* USER CODE END Application */
 

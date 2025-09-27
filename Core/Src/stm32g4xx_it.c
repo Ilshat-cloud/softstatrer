@@ -26,9 +26,10 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
-extern TIM_HandleTypeDef htim4;
-extern TIM_HandleTypeDef htim5;
-extern TIM_HandleTypeDef htim15;
+extern uint16_t ARR_TIM;
+uint8_t Phase_A_flag=0;
+uint8_t Phase_B_flag=0;
+uint8_t Phase_C_flag=0;
 /* USER CODE END TD */
 
 /* Private define ------------------------------------------------------------*/
@@ -58,6 +59,9 @@ extern TIM_HandleTypeDef htim15;
 
 /* External variables --------------------------------------------------------*/
 extern DMA_HandleTypeDef hdma_adc1;
+extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim4;
+extern TIM_HandleTypeDef htim8;
 extern TIM_HandleTypeDef htim17;
 
 /* USER CODE BEGIN EV */
@@ -168,7 +172,19 @@ void DebugMon_Handler(void)
 void EXTI3_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI3_IRQn 0 */
-  HAL_TIM_PWM_Start(&htim5,TIM_CHANNEL_1);
+  HAL_GPIO_WritePin(PWM_A_GPIO_Port,PWM_A_Pin,GPIO_PIN_RESET);
+  if (ARR_TIM<8000){
+    HAL_TIM_Base_Stop_IT(&htim3);
+    if(ARR_TIM>10)
+    {
+      TIM3->CNT=0;
+      TIM3->ARR=ARR_TIM;
+      Phase_A_flag=1;
+      HAL_TIM_Base_Start_IT(&htim3);  
+    }else{
+      HAL_GPIO_WritePin(PWM_A_GPIO_Port,PWM_A_Pin,GPIO_PIN_SET);
+    }
+  }
   /* USER CODE END EXTI3_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(EXTI_A_Pin);
   /* USER CODE BEGIN EXTI3_IRQn 1 */
@@ -182,7 +198,19 @@ void EXTI3_IRQHandler(void)
 void EXTI4_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI4_IRQn 0 */
-  HAL_TIM_PWM_Start(&htim15,TIM_CHANNEL_1);
+  HAL_GPIO_WritePin(PWM_B_GPIO_Port,PWM_B_Pin,GPIO_PIN_RESET);
+  if (ARR_TIM<8000){
+    HAL_TIM_Base_Stop_IT(&htim4);
+    if(ARR_TIM>10)
+    {
+      TIM4->CNT=0;
+      TIM4->ARR=ARR_TIM;
+      Phase_B_flag=1;
+      HAL_TIM_Base_Start_IT(&htim4);  
+    }else{
+      HAL_GPIO_WritePin(PWM_B_GPIO_Port,PWM_B_Pin,GPIO_PIN_SET);
+    }
+  }
   /* USER CODE END EXTI4_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(EXTI_B_Pin);
   /* USER CODE BEGIN EXTI4_IRQn 1 */
@@ -210,7 +238,19 @@ void DMA1_Channel1_IRQHandler(void)
 void EXTI9_5_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI9_5_IRQn 0 */
-  HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_1);
+  HAL_GPIO_WritePin(PWM_C_GPIO_Port,PWM_C_Pin,GPIO_PIN_RESET);
+  if (ARR_TIM<8000){
+    HAL_TIM_Base_Stop_IT(&htim8);
+    if(ARR_TIM>10)
+    {
+      TIM8->CNT=0;
+      TIM8->ARR=ARR_TIM;
+      Phase_C_flag=1;
+      HAL_TIM_Base_Start_IT(&htim8);  
+    }else{
+      HAL_GPIO_WritePin(PWM_C_GPIO_Port,PWM_C_Pin,GPIO_PIN_SET);
+    }
+  }
   /* USER CODE END EXTI9_5_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(EXTI_C_Pin);
   /* USER CODE BEGIN EXTI9_5_IRQn 1 */
@@ -230,6 +270,71 @@ void TIM1_TRG_COM_TIM17_IRQHandler(void)
   /* USER CODE BEGIN TIM1_TRG_COM_TIM17_IRQn 1 */
 
   /* USER CODE END TIM1_TRG_COM_TIM17_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM3 global interrupt.
+  */
+void TIM3_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM3_IRQn 0 */
+
+  /* USER CODE END TIM3_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim3);
+  /* USER CODE BEGIN TIM3_IRQn 1 */
+  if(Phase_A_flag==1){ 
+    HAL_GPIO_WritePin(PWM_A_GPIO_Port,PWM_A_Pin,GPIO_PIN_SET);
+    TIM3->ARR=500;
+    Phase_A_flag=0;
+  }else{
+    HAL_TIM_Base_Stop_IT(&htim3);
+    HAL_GPIO_WritePin(PWM_A_GPIO_Port,PWM_A_Pin,GPIO_PIN_RESET);
+  }
+  
+  /* USER CODE END TIM3_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM4 global interrupt.
+  */
+void TIM4_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM4_IRQn 0 */
+  
+  /* USER CODE END TIM4_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim4);
+  /* USER CODE BEGIN TIM4_IRQn 1 */
+  if(Phase_B_flag==1){ 
+    HAL_GPIO_WritePin(PWM_B_GPIO_Port,PWM_B_Pin,GPIO_PIN_SET);
+    TIM4->ARR=500;
+    Phase_B_flag=0;
+  }else{
+    HAL_TIM_Base_Stop_IT(&htim4);
+    HAL_GPIO_WritePin(PWM_B_GPIO_Port,PWM_B_Pin,GPIO_PIN_RESET);
+  }
+
+  /* USER CODE END TIM4_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM8 update interrupt.
+  */
+void TIM8_UP_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM8_UP_IRQn 0 */
+
+  /* USER CODE END TIM8_UP_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim8);
+  /* USER CODE BEGIN TIM8_UP_IRQn 1 */
+  if(Phase_C_flag==1){ 
+    HAL_GPIO_WritePin(PWM_C_GPIO_Port,PWM_C_Pin,GPIO_PIN_SET);
+    TIM8->ARR=500;
+    Phase_C_flag=0;
+  }else{
+    HAL_TIM_Base_Stop_IT(&htim8);
+    HAL_GPIO_WritePin(PWM_C_GPIO_Port,PWM_C_Pin,GPIO_PIN_RESET);
+  }
+  /* USER CODE END TIM8_UP_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

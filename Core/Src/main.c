@@ -77,7 +77,7 @@ int main(void)
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
-  
+
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
@@ -99,8 +99,8 @@ int main(void)
   MX_DMA_Init();
   MX_ADC1_Init();
   MX_TIM4_Init();
-  MX_TIM5_Init();
-  MX_TIM15_Init();
+  MX_TIM3_Init();
+  MX_TIM8_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */

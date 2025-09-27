@@ -74,18 +74,18 @@ void Error_Handler(void);
 #define EXTI_C_Pin GPIO_PIN_5
 #define EXTI_C_GPIO_Port GPIOA
 #define EXTI_C_EXTI_IRQn EXTI9_5_IRQn
-#define PWM_1_Pin GPIO_PIN_2
-#define PWM_1_GPIO_Port GPIOB
+#define PWM_A_Pin GPIO_PIN_2
+#define PWM_A_GPIO_Port GPIOB
 #define Shunt_DO_Pin GPIO_PIN_11
 #define Shunt_DO_GPIO_Port GPIOB
 #define Stop_DO_Pin GPIO_PIN_12
 #define Stop_DO_GPIO_Port GPIOB
 #define start_DI_Pin GPIO_PIN_13
 #define start_DI_GPIO_Port GPIOB
-#define PWM_2_Pin GPIO_PIN_14
-#define PWM_2_GPIO_Port GPIOB
-#define PWM_3_Pin GPIO_PIN_11
-#define PWM_3_GPIO_Port GPIOA
+#define PWM_B_Pin GPIO_PIN_14
+#define PWM_B_GPIO_Port GPIOB
+#define PWM_C_Pin GPIO_PIN_11
+#define PWM_C_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
 typedef enum {
