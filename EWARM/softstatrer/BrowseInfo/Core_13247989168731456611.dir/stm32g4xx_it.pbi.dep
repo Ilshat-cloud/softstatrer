@@ -1,5 +1,6 @@
-C:\Users\user\Documents\softstatrer\EWARM\softstatrer\BrowseInfo\STM32G4xx_HAL_Driver_577954748077118867.dir\stm32g4xx_hal_tim.pbi: \
-  C:\Users\user\Documents\softstatrer\Drivers\STM32G4xx_HAL_Driver\Src\stm32g4xx_hal_tim.c \
+C:\Users\user\Documents\softstatrer\EWARM\softstatrer\BrowseInfo\Core_13247989168731456611.dir\stm32g4xx_it.pbi: \
+  C:\Users\user\Documents\softstatrer\Core\Src\stm32g4xx_it.c \
+  C:\Users\user\Documents\softstatrer\EWARM\..\Core\Inc\main.h \
   C:\Users\user\Documents\softstatrer\EWARM\..\Drivers\STM32G4xx_HAL_Driver\Inc\stm32g4xx_hal.h \
   C:\Users\user\Documents\softstatrer\EWARM\..\Core\Inc\stm32g4xx_hal_conf.h \
   C:\Users\user\Documents\softstatrer\EWARM\..\Drivers\STM32G4xx_HAL_Driver\Inc\stm32g4xx_hal_rcc.h \
@@ -38,4 +39,5 @@ C:\Users\user\Documents\softstatrer\EWARM\softstatrer\BrowseInfo\STM32G4xx_HAL_D
   C:\Users\user\Documents\softstatrer\EWARM\..\Drivers\STM32G4xx_HAL_Driver\Inc\stm32g4xx_hal_pwr.h \
   C:\Users\user\Documents\softstatrer\EWARM\..\Drivers\STM32G4xx_HAL_Driver\Inc\stm32g4xx_hal_pwr_ex.h \
   C:\Users\user\Documents\softstatrer\EWARM\..\Drivers\STM32G4xx_HAL_Driver\Inc\stm32g4xx_hal_tim.h \
-  C:\Users\user\Documents\softstatrer\EWARM\..\Drivers\STM32G4xx_HAL_Driver\Inc\stm32g4xx_hal_tim_ex.h
+  C:\Users\user\Documents\softstatrer\EWARM\..\Drivers\STM32G4xx_HAL_Driver\Inc\stm32g4xx_hal_tim_ex.h \
+  C:\Users\user\Documents\softstatrer\EWARM\..\Core\Inc\stm32g4xx_it.h
