@@ -122,70 +122,42 @@ void StartmainTask(void *argument)
   //шим где 0 это 100% а >9000 это ноль
   osDelay(2);
   uint16_t dma[3];
+  HAL_ADCEx_Calibration_Start(&hadc1,ADC_SINGLE_ENDED);
   HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&dma,3);
   osDelay(2);
   HAL_ADC_Stop(&hadc1);
   HAL_ADC_Stop_DMA(&hadc1);
-  uint16_t init_pwm =9000-dma[0]*2;
+  //uint16_t init_pwm =9000-dma[0]*2;
   uint32_t dc_stop_time=(uint32_t)dma[1];         //0-4 секунды
   uint16_t speed_up_time=dma[2];        //0-4 секунды
-  uint32_t timer;
-  uint32_t diff;
+  uint32_t time=osKernelGetTickCount();
+  static uint16_t led_cnt = 0;
   /* Infinite loop */
   for(;;)
   {
+ process_status:
     switch (status){
     case Device_Idle:
-      ARR_TIM=9000;
       if(HAL_GPIO_ReadPin(start_DI_GPIO_Port,start_DI_Pin)==GPIO_PIN_RESET)
       {
-        osDelay(2);
-        if(HAL_GPIO_ReadPin(start_DI_GPIO_Port,start_DI_Pin)==GPIO_PIN_RESET)
-        {
+          time=osKernelGetTickCount();
           status=Device_Speed_up;
-          ARR_TIM=init_pwm;
-          timer=osKernelGetTickCount();
-        }
       }
       break;
     case Device_Speed_up:
+      led_cnt+=10;  //мыргаем почаще когда ждем тормоз
       if(HAL_GPIO_ReadPin(start_DI_GPIO_Port,start_DI_Pin)==GPIO_PIN_SET)
       {
-        osDelay(2);
-        if(HAL_GPIO_ReadPin(start_DI_GPIO_Port,start_DI_Pin)==GPIO_PIN_SET)
-        {
+        if ((osKernelGetTickCount()-time)<3000){
+          status=Device_Idle;           //слишком короткий промежуток чтобы тормозить, даже не разогнались, пропускаем торможение
+        }else{
           status=Device_Stop;
-          break;
+          goto process_status;
         }
-      }
-      diff=osKernelGetTickCount()-timer;
-      if (diff<speed_up_time){
-        float pwm = (float)init_pwm * (1.0f - (float)diff / (float)speed_up_time);
-        if (pwm < 0.0f) pwm = 0.0f;
-        ARR_TIM=((uint16_t)pwm);
-        //_printf("PWM %d",(uint16_t)pwm);
-      }else{
-        status=Device_Shunt_on;
-        HAL_GPIO_WritePin(Shunt_DO_GPIO_Port,Shunt_DO_Pin,GPIO_PIN_SET);
-      }
-      
-      break;
-    case Device_Shunt_on:
-      ARR_TIM=0;
-      if(HAL_GPIO_ReadPin(start_DI_GPIO_Port,start_DI_Pin)==GPIO_PIN_SET)
-      {
-        osDelay(2);
-        if(HAL_GPIO_ReadPin(start_DI_GPIO_Port,start_DI_Pin)==GPIO_PIN_SET)
-        {
-          HAL_GPIO_WritePin(Shunt_DO_GPIO_Port,Shunt_DO_Pin,GPIO_PIN_RESET);
-          osDelay(50);         //безискровой переход
-          status=Device_Stop;
-        }
+          
       }
       break;
     case Device_Stop:
-      ARR_TIM=9000;
-      osDelay(4);
       HAL_GPIO_WritePin(Stop_DO_GPIO_Port,Stop_DO_Pin,GPIO_PIN_SET);
       osDelay(dc_stop_time);
       HAL_GPIO_WritePin(Stop_DO_GPIO_Port,Stop_DO_Pin,GPIO_PIN_RESET);
@@ -193,7 +165,11 @@ void StartmainTask(void *argument)
       break;      
     }
     osDelay(1);
-    HAL_GPIO_TogglePin(Led_GPIO_Port,Led_Pin);
+    
+    if (++led_cnt >= 500) {
+      led_cnt = 0;
+      HAL_GPIO_TogglePin(Led_GPIO_Port, Led_Pin);
+    }
   }
   /* USER CODE END StartmainTask */
 }

@@ -91,7 +91,7 @@ void Error_Handler(void);
 typedef enum {
   Device_Idle                       = 0,     // 
   Device_Speed_up                   = 1,     // 
-  Device_Shunt_on                   = 2,
+//  Device_Shunt_on                   = 2,
   Device_Stop                       = 3,
 } DeviceStatus_t;
 #define DEBUG_SET
